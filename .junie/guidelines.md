@@ -16,6 +16,7 @@ This repository contains a multi-modal LLM (Large Language Model) application de
 - `src/lmdeploy/server.py`: Main Modal application file for building and deploying to Modal
 - `src/client.py`: Example client for interacting with the deployed application
 - `pyproject.toml`: Project configuration and dependencies
+- `.env`: Environment variables configuration (not committed to version control)
 
 ### Git Workflow
 - Create feature branches for new features or bug fixes
@@ -29,8 +30,14 @@ This repository contains a multi-modal LLM (Large Language Model) application de
 - Include both positive and negative test cases
 - Test edge cases thoroughly
 
+### Environment Variables
+- Use a `.env` file for local configuration
+- Never commit the `.env` file to version control
+- Document all required environment variables in the README
+- Use Modal Secrets for sensitive information in production
+
 ### Deployment
-- Use Modal.com for deployment with `modal deploy src/lmdeploy/server.py`
+- Use Modal.com for deployment with `uv run modal deploy src/lmdeploy/server.py`
 - Test locally before deploying
 - Update documentation when deployment process changes
 - Monitor deployed application for errors and performance issues
@@ -42,6 +49,9 @@ This repository contains a multi-modal LLM (Large Language Model) application de
 - Consider model size and performance requirements
 - Document model limitations and biases
 - Keep track of model versions used
+- Refer to model documentation for deployment and usage guidelines:
+  - [InternVL2.5 Deployment Documentation](https://internvl.readthedocs.io/en/latest/internvl2.5/deployment.html)
+  - [LMDeploy Documentation](https://lmdeploy.readthedocs.io/en/latest/index.html)
 
 ### Data Handling
 - Document data formats and preprocessing steps

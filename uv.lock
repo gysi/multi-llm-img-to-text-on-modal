@@ -968,6 +968,7 @@ dependencies = [
     { name = "lmdeploy" },
     { name = "modal" },
     { name = "pillow" },
+    { name = "python-dotenv" },
     { name = "requests" },
     { name = "torch" },
     { name = "transformers" },
@@ -979,6 +980,7 @@ requires-dist = [
     { name = "lmdeploy", specifier = "==0.7.3" },
     { name = "modal", specifier = "==0.74.15" },
     { name = "pillow", specifier = "==11.2.1" },
+    { name = "python-dotenv" },
     { name = "requests" },
     { name = "torch", specifier = "==2.6.0" },
     { name = "transformers", specifier = "==4.51.3" },
@@ -1697,6 +1699,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/26/6f/6b5880ed0239e85b9a39aed103b65b2ef81425beef9f45e5c035bf008330/pynvml-12.0.0.tar.gz", hash = "sha256:299ce2451a6a17e6822d6faee750103e25b415f06f59abb8db65d30f794166f5", size = 33636, upload_time = "2024-12-02T15:04:36.631Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ed/df/f7cf07a65a96dd11d71f346f9c2863accdd4784da83af7181b067d556cbc/pynvml-12.0.0-py3-none-any.whl", hash = "sha256:fdff84b62a27dbe98e08e1a647eb77342bef1aebe0878bcd15e99a83fcbecb9e", size = 26560, upload_time = "2024-12-02T15:04:35.047Z" },
+]
+
+[[package]]
+name = "python-dotenv"
+version = "1.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/88/2c/7bb1416c5620485aa793f2de31d3df393d3686aa8a8506d11e10e13c5baf/python_dotenv-1.1.0.tar.gz", hash = "sha256:41f90bc6f5f177fb41f53e87666db362025010eb28f60a01c9143bfa33a2b2d5", size = 39920, upload_time = "2025-03-25T10:14:56.835Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1e/18/98a99ad95133c6a6e2005fe89faedf294a748bd5dc803008059409ac9b1e/python_dotenv-1.1.0-py3-none-any.whl", hash = "sha256:d7c01d9e2293916c18baf562d95698754b0dbbb5e74d457c45d4f6561fb9d55d", size = 20256, upload_time = "2025-03-25T10:14:55.034Z" },
 ]
 
 [[package]]
