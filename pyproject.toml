@@ -5,11 +5,7 @@ description = "A multi-modal LLM application deployed on Modal.com that can proc
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "modal==0.74.15",
-    "torch==2.6.0",
-    "transformers==4.51.3",
-    "pillow==11.2.1",
-    "lmdeploy==0.7.3",
+    "modal==0.74.20",
     "huggingface_hub[hf_transfer]==0.30.2",
     "requests",
     "python-dotenv",

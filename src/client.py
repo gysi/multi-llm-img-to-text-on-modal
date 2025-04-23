@@ -1,3 +1,4 @@
+# TODO: This isn't what I want. I want to use the openAPI package to query the API.
 import base64
 import requests
 import argparse

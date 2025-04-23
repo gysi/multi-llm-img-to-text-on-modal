@@ -1,14 +1,10 @@
 import subprocess
-import io
-import base64
 import os
-from PIL import Image as PILImage
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv()
 
-from modal import App, Image, Volume, web_endpoint, method, gpu, web_server, Secret, concurrent
+from modal import App, Image, Volume, web_server, Secret, concurrent
 
 ########## CONSTANTS ##########
 
@@ -23,6 +19,7 @@ SERVE_MODEL_NAME = "internvl2_5-38b-awq"
 
 # Define volumes for caching
 hf_cache_vol = Volume.from_name(f"huggingface-cache-{SERVE_MODEL_NAME}", create_if_missing=True)
+# TODO: Not sure if this is useful, lmdeploy doesn't seem to use this volume
 lmdeploy_cache_vol = Volume.from_name("lmdeploy-cache", create_if_missing=True)
 
 # Create a Secret from the HF_TOKEN environment variable
@@ -32,41 +29,6 @@ if not hf_token:
 
 # Create a Modal Secret for the HF_TOKEN
 hf_secret = Secret.from_name("huggingface-secret") if not hf_token else Secret.from_dict({"HF_TOKEN": hf_token})
-
-########## UTILS FUNCTIONS ##########
-
-def download_hf_model(model_dir: str, model_name: str):
-    """Retrieve model from HuggingFace Hub and save into
-    specified path within the modal container.
-
-    Args:
-        model_dir (str): Path to save model weights in container.
-        model_name (str): HuggingFace Model ID.
-    """
-    import os
-    from huggingface_hub import snapshot_download
-
-    os.makedirs(model_dir, exist_ok=True)
-
-    # Get the HF_TOKEN from environment variables (provided by the Modal Secret)
-    hf_token = os.environ.get("HF_TOKEN")
-    if not hf_token:
-        raise ValueError("HF_TOKEN environment variable not set. Cannot download model without authentication.")
-
-    try:
-        print(f"Downloading model {model_name} to {model_dir}...")
-        # Use snapshot_download with improved filtering
-        # Ignore *.pt, *.bin files and consolidated.safetensors to prevent errors
-        snapshot_download(
-            repo_id=model_name,
-            local_dir=model_dir,
-            ignore_patterns=["*.pt", "*.bin", "consolidated.safetensors"],
-            token=hf_token,
-        )
-        print(f"Successfully downloaded model {model_name}")
-    except Exception as e:
-        print(f"Error downloading model: {e}")
-        raise
 
 ########## IMAGE DEFINITION ##########
 
@@ -82,6 +44,7 @@ image = (
         "grpclib==0.4.7",
     )
     .env({"HF_HUB_ENABLE_HF_TRANSFER": "1"})  # faster model transfers
+    # Currently I don't want to download the model within the buildstep
     # .run_function(
     #     download_hf_model,
     #     timeout=60 * 60,
@@ -129,7 +92,7 @@ image = (
 
 app = App(f"multimodal-{SERVE_MODEL_NAME}")
 
-SERVER_PORT = 23333  # Port for the LMDeploy API server
+SERVER_PORT = 23333
 
 @app.function(
     image=image,
@@ -159,86 +122,37 @@ def serve():
     """
     subprocess.Popen(cmd, shell=True)
 
+########## UTILS FUNCTIONS ##########
 
-# @app.function(
-#     image=image,
-#     gpu="A100-80GB",
-#     scaledown_window=5 * SECONDS,
-#     volumes={
-#         "/root/.cache/huggingface": hf_cache_vol,
-#         "/root/.cache/lmdeploy": lmdeploy_cache_vol,
-#     },
-#     secrets=[hf_secret],
-# )
-# @method()
-# def process_image(image_data):
-#     """Process an image and generate a text description using the OpenAI-compatible API."""
-#     from openai import OpenAI
-#     import base64
-#     import io
-#     from PIL import Image as PILImage
-#     import tempfile
-#
-#     # Decode base64 image
-#     image_bytes = base64.b64decode(image_data)
-#     image = PILImage.open(io.BytesIO(image_bytes))
-#
-#     # Save the image to a temporary file
-#     with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp_file:
-#         image.save(temp_file, format="JPEG")
-#         temp_file_path = temp_file.name
-#
-#     try:
-#         # Create OpenAI client pointing to our local server
-#         client = OpenAI(
-#             api_key="super-secret-key",  # This matches the default API key in the server
-#             base_url=f"http://localhost:{SERVER_PORT}/v1"
-#         )
-#
-#         # Get the model name
-#         model_name = client.models.list().data[0].id
-#
-#         # Create the chat completion request
-#         response = client.chat.completions.create(
-#             model=model_name,
-#             messages=[{
-#                 'role': 'user',
-#                 'content': [{
-#                     'type': 'text',
-#                     'text': 'Describe this image in detail',
-#                 }, {
-#                     'type': 'image_url',
-#                     'image_url': {
-#                         'url': f"file://{temp_file_path}",
-#                     },
-#                 }],
-#             }],
-#             temperature=0.7,
-#             top_p=0.9
-#         )
-#
-#         # Extract the generated text
-#         generated_text = response.choices[0].message.content
-#
-#         return {"description": generated_text}
-#     finally:
-#         # Clean up the temporary file
-#         import os
-#         if os.path.exists(temp_file_path):
-#             os.remove(temp_file_path)
-#
-#
-# @app.function(
-#     image=image,
-#     gpu="A100-80GB",
-#     scaledown_window=5 * SECONDS,
-#     volumes={
-#         "/root/.cache/huggingface": hf_cache_vol,
-#         "/root/.cache/lmdeploy": lmdeploy_cache_vol,
-#     },
-#     secrets=[hf_secret],
-# )
-# @web_endpoint(method="POST")
-# def web_process_image(image_data: str):
-#     """Web endpoint for processing images using the OpenAI-compatible API."""
-#     return process_image.remote(image_data)
+def download_hf_model(model_dir: str, model_name: str):
+    """Retrieve model from HuggingFace Hub and save into
+    specified path within the modal container.
+
+    Args:
+        model_dir (str): Path to save model weights in container.
+        model_name (str): HuggingFace Model ID.
+    """
+    import os
+    from huggingface_hub import snapshot_download
+
+    os.makedirs(model_dir, exist_ok=True)
+
+    # Get the HF_TOKEN from environment variables (provided by the Modal Secret)
+    hf_token = os.environ.get("HF_TOKEN")
+    if not hf_token:
+        raise ValueError("HF_TOKEN environment variable not set. Cannot download model without authentication.")
+
+    try:
+        print(f"Downloading model {model_name} to {model_dir}...")
+        # Use snapshot_download with improved filtering
+        # Ignore *.pt, *.bin files and consolidated.safetensors to prevent errors
+        snapshot_download(
+            repo_id=model_name,
+            local_dir=model_dir,
+            ignore_patterns=["*.pt", "*.bin", "consolidated.safetensors"],
+            token=hf_token,
+        )
+        print(f"Successfully downloaded model {model_name}")
+    except Exception as e:
+        print(f"Error downloading model: {e}")
+        raise
