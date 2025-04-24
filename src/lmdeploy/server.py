@@ -13,9 +13,13 @@ from modal import App, Image, Volume, web_server, Secret, concurrent
 # MODEL_DIR = f"/models/{MODEL_NAME}"
 # SERVE_MODEL_NAME = "internvl2_5-78b"
 
-MODEL_NAME = "OpenGVLab/InternVL2_5-38B-AWQ"
+# MODEL_NAME = "OpenGVLab/InternVL2_5-38B-AWQ"
+# MODEL_DIR = f"/models/{MODEL_NAME}"
+# SERVE_MODEL_NAME = "internvl2_5-38b-awq"
+
+MODEL_NAME = "OpenGVLab/InternVL2_5-8B-AWQ"
 MODEL_DIR = f"/models/{MODEL_NAME}"
-SERVE_MODEL_NAME = "internvl2_5-38b-awq"
+SERVE_MODEL_NAME = "internvl2_5-8b-awq"
 
 # Define volumes for caching
 hf_cache_vol = Volume.from_name(f"huggingface-cache-{SERVE_MODEL_NAME}", create_if_missing=True)
@@ -96,13 +100,13 @@ SERVER_PORT = 23333
 
 @app.function(
     image=image,
-    gpu="L40S",
-    scaledown_window=10 * 60,
+    gpu="L4:1",
+    scaledown_window=60,
     # https://modal.com/docs/guide/concurrent-inputs
     max_containers=1,  # fix at 1 to test concurrency within 1 server setup
     volumes={
         "/root/.cache/huggingface": hf_cache_vol,
-        "/root/.cache/lmdeploy": lmdeploy_cache_vol,
+        # "/root/.cache/lmdeploy": lmdeploy_cache_vol,
     },
     secrets=[hf_secret],  # Pass the HF_TOKEN secret to the container
 )
