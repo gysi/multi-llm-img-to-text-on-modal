@@ -104,7 +104,7 @@ The repository includes a client script that demonstrates how to use the deploye
 python src/client.py --image path/to/your/image.jpg
 ```
 
-### API Endpoint
+### API Endpoint (TODO: This here is just wrong.)
 
 You can make direct HTTP requests to the web_process_image endpoint:
 
@@ -126,11 +126,11 @@ response = requests.post(
 print(response.json()["description"])
 ```
 
-### LMDeploy OpenAI-Compatible API
+### LMDeploy OpenAI-Compatible API (TODO: This here is not tested)
 
 The application uses LMDeploy's OpenAI-compatible API server, which provides an interface that's compatible with the OpenAI API. This means you can use the OpenAI Python client to interact with the model, making it easy to integrate with existing tools and workflows.
 
-For advanced usage, you can interact directly with the LMDeploy API server:
+You can interact directly with the LMDeploy API server:
 
 ```python
 from openai import OpenAI
@@ -173,24 +173,10 @@ The model is deployed using [LMDeploy](https://github.com/InternLM/lmdeploy), a 
 
 ### Useful Resources
 
-- [InternVL2.5 Deployment Documentation](https://internvl.readthedocs.io/en/latest/internvl2.5/deployment.html)
+- [InternVL Deployment Documentation](https://internvl.readthedocs.io/en/latest/internvl2.5/deployment.html)
 - [InternVL Model Family GitHub Repository](https://github.com/OpenGVLab/InternVL)
 - [LMDeploy Documentation](https://lmdeploy.readthedocs.io/en/latest/index.html)
-- [InternVL2.5-38B on Hugging Face](https://huggingface.co/OpenGVLab/InternVL2_5-38B)
-
-### Model Download Optimizations
-
-The application uses several optimizations to efficiently download the model from Hugging Face Hub:
-
-- (OUTDATED) **Fast Downloads**: Uses `hf_transfer`, a Rust-based library developed to speed up file transfers with the Hub
-- (OUTDATED)  **Selective Downloading**: Filters out unnecessary files (like `.pt`, `.bin`, and `consolidated.safetensors`) to reduce download size and prevent errors
-- **Caching**: Utilizes Modal Volumes to cache the downloaded model weights for faster startup on subsequent deployments
-
-## Project Structure
-
-- `src/lmdeploy/server.py`: Main Modal application file for building and deploying to Modal
-- `src/client.py`: Example client for interacting with the deployed application
-- `pyproject.toml`: Project configuration and dependencies
+- [InternVL3-38B-AWQ on Hugging Face](https://huggingface.co/OpenGVLab/InternVL3-38B-AWQ)
 
 ## Contributing
 

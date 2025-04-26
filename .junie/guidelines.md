@@ -12,12 +12,6 @@ This repository contains a multi-modal LLM (Large Language Model) application de
 - Keep functions small and focused on a single task
 - Use type hints where appropriate
 
-### Project Structure
-- `src/lmdeploy/server.py`: Main Modal application file for building and deploying to Modal
-- `src/client.py`: Example client for interacting with the deployed application
-- `pyproject.toml`: Project configuration and dependencies
-- `.env`: Environment variables configuration (not committed to version control)
-
 ### Git Workflow
 - Create feature branches for new features or bug fixes
 - Write clear, concise commit messages
