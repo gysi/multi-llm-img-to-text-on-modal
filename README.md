@@ -90,9 +90,7 @@ Alternatively, you can use the `--env-file` flag:
 uv run --env-file .env modal deploy src/lmdeploy/server.py
 ```
 
-This will deploy the application and provide you with two endpoint URLs:
-1. The LMDeploy API server endpoint (for direct LMDeploy API access)
-2. The web_process_image endpoint (for processing images (not only images) via a simplified OpenAPI API)
+This will deploy the application and provide you with the LMDeploy API server endpoint (for direct LMDeploy API access)
 
 ## Usage (TODO: This here was AI generated and probably doesn't work, I need to work on an openAPI like client)
 
