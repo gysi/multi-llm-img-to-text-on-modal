@@ -65,9 +65,10 @@ SERVE_MODEL_NAME = "internvl3-38b-awq"
 MODEL_DIR = f"/models/{MODEL_NAME}"
 TURBOMIND_MODEL_DIR = f"/models/turbomind/{MODEL_NAME}"
 # GPU = "L4"
-GPU = "L40S"
+# GPU = "L40S"
 # GPU = "A100-40GB"
-# GPU = "H100"
+# GPU = "A100-40GB"
+GPU = "H100"
 
 # Define volumes for caching
 #hf_cache_vol = Volume.from_name(f"huggingface-cache-{SERVE_MODEL_NAME}", create_if_missing=True)
@@ -135,7 +136,7 @@ SERVER_PORT = 23333
     image=image,
     # enable_memory_snapshot=True,
     gpu=GPU,
-    cpu=1,
+    cpu=1.5,
     # memory=2048,
     memory=4096,
     scaledown_window=45,
@@ -148,7 +149,7 @@ SERVER_PORT = 23333
     },
     secrets=[hf_secret],  # Pass the HF_TOKEN secret to the container
 )
-@concurrent(max_inputs=3)  # max concurrent input into container
+@concurrent(max_inputs=20)  # max concurrent input into container
 @web_server(port=SERVER_PORT, startup_timeout=60 * 60)
 def serve():
     """Start the LMDeploy API server with OpenAI-compatible interface."""
@@ -163,7 +164,8 @@ def serve():
         --tp 1 \
         --model-format awq \
         --quant-policy 8 \
-        --cache-max-entry-count 0.2 \
+        --cache-max-entry-count 0.5 \
+        --enable-prefix-caching \
         --chat-template internvl2_5 \
         {MODEL_DIR}
     """
