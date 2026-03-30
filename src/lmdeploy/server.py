@@ -92,7 +92,6 @@ image = (
     )
     .pip_install( #needed when downloading model within the buildstep
         "huggingface_hub[hf_transfer]",
-        "openai==1.75.0", # lmdeploy already includes a certain version of this, if there is an error later, maybe I need to exclude this line
         "python-dotenv",
         "grpclib==0.4.7",
     )
@@ -105,8 +104,8 @@ image = (
         secrets=[hf_secret],
     )
     # everything after this is not necessary for the image download step
-    .pip_install(  # add flash-attn
-        "flash-attn==2.7.4.post1", extra_options="--no-build-isolation",
+    .pip_install(
+        "flash-attn==2.7.4.post1", # extra_options="--no-build-isolation",
     )
     .pip_install(
         "timm==1.0.15",
@@ -138,10 +137,10 @@ SERVER_PORT = 23333
     gpu=GPU,
     cpu=1.5,
     # memory=2048,
-    memory=4096,
+    # memory=4096,
+    memory=32768,
     scaledown_window=45,
     timeout=120,
-    # https://modal.com/docs/guide/concurrent-inputs
     max_containers=1,  # fix at 1 to test concurrency within 1 server setup
     volumes={
         # "/root/.cache/huggingface": hf_cache_vol,
@@ -149,30 +148,33 @@ SERVER_PORT = 23333
     },
     secrets=[hf_secret],  # Pass the HF_TOKEN secret to the container
 )
-@concurrent(max_inputs=20)  # max concurrent input into container
-@web_server(port=SERVER_PORT, startup_timeout=60 * 60)
+# https://modal.com/docs/guide/concurrent-inputs
+@concurrent(max_inputs=16)
+@web_server(port=SERVER_PORT, startup_timeout=60 * 5)
 def serve():
     """Start the LMDeploy API server with OpenAI-compatible interface."""
     print("Starting LMDeploy API server...")
-    # --chat-template internvl2_5 -> this is because lmdeploy at version 0.7.3 doesn't yet have internVL3 as supported model
-    cmd = f"""
-    lmdeploy serve api_server \
-        --model-name {SERVE_MODEL_NAME} \
-        --server-port {SERVER_PORT} \
-        --backend turbomind \
-        --session-len 16384 \
-        --tp 1 \
-        --model-format awq \
-        --quant-policy 8 \
-        --cache-max-entry-count 0.5 \
-        --enable-prefix-caching \
-        --chat-template internvl2_5 \
-        {MODEL_DIR}
-    """
 
-    # --model-format awq \ # this is only needed for AWQ models
-    # --quant-policy 8 \ # Maybe this isn't so good at all, not sure
+    args = [
+        "lmdeploy serve api_server",
+        f"--model-name {SERVE_MODEL_NAME}",
+        f"--server-port {SERVER_PORT}",
+        # "--log-level INFO",
+        "--backend turbomind", # turbomind or pytorch
+        # "--eager-mode", # pytorch only (no sure what this does yet), seems to start faster with this
+        "--session-len 16384",
+        "--tp 1",
+        "--model-format awq",  # Only needed for AWQ models
+        "--quant-policy 8",
+        "--cache-max-entry-count 0.5",
+        # "--enable-prefix-caching",
+        "--chat-template internvl2_5",  # lmdeploy 0.7.3 doesn't support internVL3
+        MODEL_DIR
+    ]
+
+    # Join with line continuation character for display
+    cmd = " \\\n    ".join(args)
     print(cmd)
 
-    subprocess.Popen(cmd, shell=True)
-
+    # Execute command
+    subprocess.Popen(" ".join(args), shell=True)
